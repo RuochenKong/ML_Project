@@ -23,13 +23,24 @@ def getData(fn,fold = 'detection'):
 
 	return Dx, Dy
 
-foldn = '..\\detection\\Dog_1'
 foldn = '..\\prediction\\Dog_1'
 
 files = os.listdir(foldn)
 
-# dict_keys(['__header__', '__version__', '__globals__', 'data', 'freq', 'channels', 'latency'])
+# ['__header__', '__version__', '__globals__', 'interictal_segment_1']
 mat = scipy.io.loadmat(foldn+'\\'+files[0])
 k = list(mat.keys())
 print(k)
-print(mat['interictal_segment_1'][0][0][0].shape)
+print(mat[k[3]][0][0][0].shape)
+
+foldn = '..\\detection\\Dog_1'
+files = os.listdir(foldn)
+
+# ['__header__', '__version__', '__globals__', 'data', 'freq', 'channels', 'latency'] -- ictal
+# OR
+# ['__header__', '__version__', '__globals__', 'data', 'freq', 'channels'] -- interictal
+mat = scipy.io.loadmat(foldn+'\\'+files[2000])
+k = list(mat.keys()) # 
+print(k)
+print(mat[k[3]].shape)
+
