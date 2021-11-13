@@ -34,8 +34,8 @@ Keys of loaded files:
 <p>&emsp; k = ['__header__', '__version__', '__globals__', 'interictal_segment_1'] </p>
 <p>&emsp; k[3] is the real useful part.</p>
 <p>&emsp; mat[k][0][0] </p>
-<p>&emsp;&emsp; [0] -> Data</p>
-<p>&emsp;&emsp; [1] -> len(Data)</p>
-<p>&emsp;&emsp; [2] -> Sampleing freq.</p>
-<p>&emsp;&emsp; [3] -> channels</p>
-<p>&emsp;&emsp; [4] -> sequency = s, then it from segment (s-1)x10 - sx10</p>
+<p>&emsp;&emsp;&emsp;&emsp; [0] -> Data</p>
+<p>&emsp;&emsp;&emsp;&emsp; [1] -> len(Data)</p>
+<p>&emsp;&emsp;&emsp;&emsp; [2] -> Sampleing freq.</p>
+<p>&emsp;&emsp;&emsp;&emsp; [3] -> channels</p>
+<p>&emsp;&emsp;&emsp;&emsp; [4] -> sequency = s, then it from segment (s-1)x10 - sx10</p>
