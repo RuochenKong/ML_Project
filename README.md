@@ -41,6 +41,6 @@ Keys of loaded files:
 
 ## Feature Extraction ##
 - Mean, Max, Min, Stdv  
-&emsp; Normalize with $$ X^{'} = \frac{X-\mu}{\sigma}$$ 
-- FFT 
-&emsp;Facing Problem!
+&emsp; Normalize with $$ X^{'} = \frac{X-\mu}{\sigma}$$  
+- FFT   
+&emsp;Facing Problem!  
