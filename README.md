@@ -27,7 +27,7 @@ Keys of loaded files:
 <p> &emsp;&emsp;-- for ictal data </p>
 <p> &emsp; ['__header__', '__version__', '__globals__', 'data', 'freq', 'channels'] </p>
 <p> &emsp;&emsp;-- for interictal data </p>
-<p> Possiible to use len(keys()) to determing ictal or interictal</p>  
+<p> Possible to use len(keys()) to determing ictal or interictal</p>  
 
 ### prediction ###  
 Keys of loaded files:  
