@@ -3,7 +3,7 @@
 Place the files as:  
   
 detection  
-    Dog_1  
+&emsp;Dog_1  
         xxx.mat  
         ...  
     ...  
