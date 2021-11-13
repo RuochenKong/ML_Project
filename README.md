@@ -40,7 +40,7 @@ Keys of loaded files:
 <p>&emsp;mat[k[3]][0][0][4] -> sequency = s, then it from segment (s-1)x10 - sx10</p>
 
 ## Feature Extraction ##
-- Mean, Max, Min, Stdv
+- Mean, Max, Min, Stdv  
 &emsp; Normalize with $$ X^{'} = \frac{X-\mu}{\sigma}$$ 
 - FFT 
-<p>&emsp;Facing Problem!</p>
+&emsp;Facing Problem!
