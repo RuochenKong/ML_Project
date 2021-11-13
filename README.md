@@ -38,3 +38,9 @@ Keys of loaded files:
 <p>&emsp;mat[k[3]][0][0][2] -> Sampleing freq.</p>
 <p>&emsp;mat[k[3]][0][0][3] -> channels</p>
 <p>&emsp;mat[k[3]][0][0][4] -> sequency = s, then it from segment (s-1)x10 - sx10</p>
+
+## Feature Extraction ##
+- Mean, Max, Min, Stdv
+<p>&emsp; Normalize with $$ X^' = \frac{x-\miu}{\sigma}  </p>
+- FFT 
+<p> Facing Problem!</p>
