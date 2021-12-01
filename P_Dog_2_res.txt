@@ -1,0 +1,4 @@
+Dog_2
+	CS-SVM:  Accuracy: 0.8941, Sensitivity: 0.3036, F1: 0.2931
+			with c = 8.00 r2 = 0.50
+	   SVM:  Accuracy: 0.9225, Sensitivity: 0.0000, F1: 0.0000
