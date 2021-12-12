@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import genfromtxt
 from sklearn import svm
-from cssvm import Mysvm
+from sklearn import metrics
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -19,57 +19,16 @@ def loadData(ob,detec = 1):
 	return genfromtxt(xn, delimiter=','),genfromtxt(yn, delimiter=',')
 
 
-'''
-Input:
-	l = actual label
-	lh = estimate label
-Output:
-	TP = num(lh = -1 & l = -1) 
-	TN = num(lh = 1 & l = 1)
-	FP = num(lh = 1 & l = -1)
-	FN = num(lh = -1 & l = 1)
-Use -1 for positive is because 
-	the preictal data is labeled as -1
-'''
-
-def ana(l,lh):
-	res = [0,0,0,0]
-
-	for i in range(len(l)):
-		if lh[i] == -1:
-			if l[i] == -1:
-				res[0] += 1
-			else: 
-				res[3] += 1
-		elif l[i] == 1:
-			res[1] += 1
-		else: 
-			res[2] += 1 
-
-	return res
+observer = 'Patient_2'
+X,yprim = loadData(observer,0)
 
 
+y = np.zeros(yprim.shape)
 
-def val(lres):
-	TP,TN,FP,FN = lres
-
-	if TP + FN == 0:
-		sens = 0
-	else:
-		sens = TP/(TP+FN)
-	F1 = TP/(TP + 0.5*(FP+FN))
-	acc = (TP+TN)/(TP+TN+FP+FN)
-
-	graph = np.array([[TP, FN],[FP,TN]])/(TP+TN+FP+FN)
-
-	return sens, F1, acc, graph
+y[yprim<0] += 1
 
 
-
-observer = 'Dog_1'
-X,y = loadData(observer,0)
-
-NumIc = len(y[y>0])
+NumIc = len(y[y==1])
 NumInter = len(y) - NumIc
 
 state = np.random.get_state()
@@ -78,7 +37,7 @@ np.random.set_state(state)
 np.random.shuffle(y)
 
 N,p = X.shape
-
+print(N)
 # seperate data for cross-validation
 Vx = []
 Vy = []
@@ -93,106 +52,186 @@ for i in range(4):
 Vx.append(X[4*n:])
 Vy.append(y[4*n:])
 
-
 # set possible C values
 C = []
 # r1 fixed at 1, change r2
 R2 = []
 eta = 10**(-4) # fixed
 for i in range(5):
-	C.append(2**(i))
-	R2.append(0.1*(i+1))
+	C.append((i+5)/10)
+for i in range(5):
+	C.append(i+1)
+for i in range(10):
+	R2.append((i+1)/10)
 
-SenG = np.zeros((5,5))
-
-
-for p in range(5):
-	xv = Vx[p]
-	yv = Vy[p]
-	ind = [0,1,2,3,4]
-	ind.remove(p)
-
-	xt = np.concatenate((Vx[ind[0]],Vx[ind[1]],Vx[ind[2]],Vx[ind[3]]),axis = 0)
-	yt = np.concatenate((Vy[ind[0]],Vy[ind[1]],Vy[ind[2]],Vy[ind[3]]))
-
-	for i in range(5):
-		c = C[i]
-		for j in range(5):
-			r2 = R2[j]
-
-			w = Mysvm(xt,yt,c,1,r2,eta)
-			yh = np.sign(xv.dot(w))
-
-			tmp = ana(yv,yh)
-			SenG[i][j] += val(tmp)[0]
-
-			print('p = %d, c = %2e, r2 = %2e'%(p,c,r2))
+AUC = np.zeros((10,10))
 
 
-SenG /= 5
-optc = 0
-optr = 0
+for ci in range(10):
+	c = C[ci]
+
+
+	for ri in range(10):
+		r = R2[ri]
+
+		clf = svm.SVC(C = c, class_weight = {0:r, 1:1})
+		for testi in range(5):
+
+			Vxtest = Vx[testi]
+			Vytest = Vy[testi]
+
+			I = [0,1,2,3,4]
+			
+			I.remove(testi)
+
+			Vyprob = np.zeros(Vytest.shape)
+
+			for i in range(4):
+
+				Vxvalid = Vx[I[i]]
+				Vyvalid = Vy[I[i]]
+
+				trainI = []
+				for tmp in I:
+					trainI.append(tmp)
+				trainI.remove(I[i])
+
+
+				Vxtrain = np.concatenate((Vx[trainI[0]],Vx[trainI[1]],Vx[trainI[2]]),axis = 0)
+				Vytrain = np.concatenate((Vy[trainI[0]],Vy[trainI[1]],Vy[trainI[2]]))
+
+				clf.fit(Vxtrain,Vytrain)
+				
+				Vyprob += clf.predict(Vxtest)
+
+			Vyprob /= 4
+			auc = metrics.roc_auc_score(Vytest, Vyprob)
+			AUC[ci][ri] += auc
+
+			print('testi = %d, c = %2e, r2 = %2e, auc ='%(testi,c,r),auc)
+
+AUC /= 5
+
+plt.figure()
+sns.heatmap(AUC, xticklabels = R2, yticklabels = C, annot = True, cmap="YlGnBu")
+plt.savefig('Pres\\P_'+observer+'_CR.png')
+
+ci,ri = np.unravel_index(np.argmax(AUC, axis=None), AUC.shape)
+
+optc = C[ci]
+optr = R2[ri]
+
+state = np.random.get_state()
+np.random.shuffle(X)
+np.random.set_state(state)
+np.random.shuffle(y)
+
+N,p = X.shape
+# seperate data for cross-validation
+Vx = []
+Vy = []
+n = N//5
+
+for i in range(4):
+	Xi = X[i*n:(i+1)*n][:]
+	yi = y[i*n:(i+1)*n]
+	Vx.append(Xi)
+	Vy.append(yi)
+
+Vx.append(X[4*n:])
+Vy.append(y[4*n:])
+
+'''
+TP = G[0][0]
+FN = G[0][1]
+FP = G[1][0]
+TN = G[1][1]
+'''
+G = np.zeros((2,2))
+Gb = np.zeros((2,2))
 
 for i in range(5):
-	for j in range(5):
-		if SenG[i][j] > SenG[optc][optr]:
-			optc = i
-			optr = j
 
-optc = C[optc]
-optr = R2[optr]
+	Vxvalid = Vx[i]
+	Vyvalid = Vy[i]
 
-plt.figure()
-sns.heatmap(SenG, xticklabels = R2, yticklabels = C, annot = True, cmap="YlGnBu")
-plt.savefig('P_'+observer+'_CR.png')
-print(optc,optr)
+	I = [0,1,2,3,4]
+	I.remove(i)
 
-statre = np.zeros((4,))
-statBas = np.zeros((4,))
+	Vxt = np.concatenate((Vx[I[0]],Vx[I[1]],Vx[I[2]],Vx[I[3]]),axis = 0)
+	Vyt = np.concatenate((Vy[I[0]],Vy[I[1]],Vy[I[2]],Vy[I[3]]))
+
+	clf = svm.SVC(C = optc, class_weight = {0:optr, 1:1})
+	clf.fit(Vxt,Vyt)
+	yhat = clf.predict(Vxvalid)
 
 
-for p in range(5):
-	xv = Vx[p]
-	yv = Vy[p]
-	ind = [0,1,2,3,4]
-	ind.remove(p)
+	clfbase = svm.SVC()
+	clfbase.fit(Vxt,Vyt)
+	ybase = clfbase.predict(Vxvalid)
 
-	xt = np.concatenate((Vx[ind[0]],Vx[ind[1]],Vx[ind[2]],Vx[ind[3]]),axis = 0)
-	yt = np.concatenate((Vy[ind[0]],Vy[ind[1]],Vy[ind[2]],Vy[ind[3]]))
+	for k in range(len(yhat)):
+		if Vyvalid[k] == 1:
+			if yhat[k] == Vyvalid[k]:
+				G[0][0] += 1
+			else: 
+				G[1][0] += 1
 
-	w = Mysvm(xt,yt,optc,1,optr,eta)
-	yh = np.sign(xv.dot(w))
+			if ybase[k] == Vyvalid[k]:
+				Gb[0][0] += 1
+			else: 
+				Gb[1][0] += 1
 
-	statre += np.array(ana(yv,yh))
+		else:
+			if yhat[k] == Vyvalid[k]:
+				G[1][1] += 1
+			else:
+				G[0][1] += 1
 
+			if ybase[k] == Vytrain[k]:
+				Gb[1][1] += 1
+			else: 
+				Gb[0][1] += 1
 
-	clf = svm.SVC()
-	clf.fit(xt, yt)
-	yh = clf.predict(xv)
-	statBas += np.array(ana(yv,yh))
-
-
-
-sens, F1, acc, graph = val(statre)
-
-plt.figure()
-labelx = ['preictal', 'interictal']
-labely = ['preictal', 'interictal']
-gr =  sns.heatmap(graph,xticklabels = labelx, yticklabels = labely, annot = True, cmap="YlGnBu")
-plt.savefig('P_TPstretch'+observer+'.png')
-textres = '%s\n\tCS-SVM:  Accuracy: %.4f, Sensitivity: %.4f, F1: %.4f\n\t\t\twith c = %.2f r2 = %.2f\n'\
-	%(observer,acc,sens,F1,optc,optr)
-
-
-sens, F1, acc, graph = val(statBas)
 
 plt.figure()
 labelx = ['preictal', 'interictal']
 labely = ['preictal', 'interictal']
-gr =  sns.heatmap(graph,xticklabels = labelx, yticklabels = labely, annot = True, cmap="YlGnBu")
-plt.savefig('P_TPBase'+observer+'.png')
-textres += '\t   SVM:  Accuracy: %.4f, Sensitivity: %.4f, F1: %.4f\n'%(acc,sens,F1)
+gr =  sns.heatmap(G/N,xticklabels = labelx, yticklabels = labely, annot = True, cmap="YlGnBu")
+plt.xlabel('actual')
+plt.ylabel('predict')
+plt.title(observer+'_CSSVM')
+plt.savefig('Pres\\P_TPstretch'+observer+'.png')
 
-f = open('P_'+observer+'_res.txt','w')
+plt.figure()
+gr =  sns.heatmap(Gb/N,xticklabels = labelx, yticklabels = labely, annot = True, cmap="YlGnBu")
+plt.xlabel('actual')
+plt.ylabel('predict')
+plt.title(observer+'_SVM')
+plt.savefig('Pres\\P_TPBase'+observer+'.png')
+
+[[TP,FN],[FP,TN]] = G
+acc = (TP+TN)/N
+sensivity = 0
+if TP != 0:
+	sensivity = TP/(TP+FN)
+F1 = 2*TP/(2*TP + FP + FN)
+
+textres = '%s -- {preictal:interictal} = {%.2f:%.2f}\n'%(observer,NumIc/N,NumInter/N)
+
+
+textres += '\tCS-SVM:  Accuracy: %.4f, Sensitivity: %.4f, F1: %.4f\n\t\t\twith c = %.2f r2 = %.2f\n'\
+	%(acc,sensivity,F1,optc,optr)
+
+[[TP,FN],[FP,TN]] = Gb
+acc = (TP+TN)/N
+sensivity = 0
+if TP != 0:
+	sensivity = TP/(TP+FN)
+F1 = 2*TP/(2*TP + FP + FN)
+
+textres += '\t   SVM:  Accuracy: %.4f, Sensitivity: %.4f, F1: %.4f\n'%(acc,sensivity,F1)
+
+f = open('Pres\\P_'+observer+'_res.txt','w')
 f.write(textres)
 f.close()

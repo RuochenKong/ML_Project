@@ -1,4 +1,0 @@
-Patient_1
-	CS-SVM:  Accuracy: 0.7971, Sensitivity: 0.6129, F1: 0.6230
-			with c = 1.00 r2 = 0.50
-	   SVM:  Accuracy: 0.8132, Sensitivity: 0.9649, F1: 0.4641
