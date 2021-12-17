@@ -10,11 +10,11 @@ def loadData(ob,detec = 1):
 	xn = ''
 	yn = ''
 	if detec == 1:
-		xn = 'D_'+ob+'x.csv'
-		yn = 'D_'+ob+'y.csv'
+		xn = 'Data\\D_'+ob+'x.csv'
+		yn = 'Data\\D_'+ob+'y.csv'
 	else:
-		xn = 'P_'+ob+'x.csv'
-		yn = 'P_'+ob+'y.csv'
+		xn = 'Data\\P_'+ob+'x.csv'
+		yn = 'Data\\P_'+ob+'y.csv'
 
 	return genfromtxt(xn, delimiter=','),genfromtxt(yn, delimiter=',')
 
@@ -26,7 +26,7 @@ X,yprim = loadData(observer)
 y = np.zeros(yprim.shape)
 
 y[yprim<0] += 1
-
+y[yprim>0] -= 1
 
 NumIc = len(y[y==1])
 NumInter = len(y) - NumIc
@@ -66,7 +66,6 @@ for i in range(10):
 
 AUC = np.zeros((10,10))
 
-
 for ci in range(10):
 	c = C[ci]
 
@@ -74,7 +73,7 @@ for ci in range(10):
 	for ri in range(10):
 		r = R2[ri]
 
-		clf = svm.SVC(C = c, class_weight = {0:r, 1:1})
+		clf = svm.SVC(C = c, class_weight = {-1:r, 1:1})
 		for testi in range(5):
 
 			Vxtest = Vx[testi]
@@ -142,10 +141,10 @@ Vx.append(X[4*n:])
 Vy.append(y[4*n:])
 
 '''
-TP = G[0][0]
-FN = G[0][1]
-FP = G[1][0]
-TN = G[1][1]
+TN = G[0][0]
+FP = G[0][1]
+FN = G[1][0]
+TP = G[1][1]
 '''
 G = np.zeros((2,2))
 Gb = np.zeros((2,2))
@@ -161,7 +160,7 @@ for i in range(5):
 	Vxt = np.concatenate((Vx[I[0]],Vx[I[1]],Vx[I[2]],Vx[I[3]]),axis = 0)
 	Vyt = np.concatenate((Vy[I[0]],Vy[I[1]],Vy[I[2]],Vy[I[3]]))
 
-	clf = svm.SVC(C = optc, class_weight = {0:optr, 1:1})
+	clf = svm.SVC(C = optc, class_weight = {-1:optr, 1:1})
 	clf.fit(Vxt,Vyt)
 	yhat = clf.predict(Vxvalid)
 
@@ -173,44 +172,44 @@ for i in range(5):
 	for k in range(len(yhat)):
 		if Vyvalid[k] == 1:
 			if yhat[k] == Vyvalid[k]:
-				G[0][0] += 1
+				G[1][1] += 1
 			else: 
 				G[1][0] += 1
 
 			if ybase[k] == Vyvalid[k]:
-				Gb[0][0] += 1
+				Gb[1][1] += 1
 			else: 
 				Gb[1][0] += 1
 
 		else:
 			if yhat[k] == Vyvalid[k]:
-				G[1][1] += 1
+				G[0][0] += 1
 			else:
 				G[0][1] += 1
 
 			if ybase[k] == Vytrain[k]:
-				Gb[1][1] += 1
+				Gb[0][0] += 1
 			else: 
 				Gb[0][1] += 1
 
 
 plt.figure()
-labelx = ['ictal', 'interictal']
-labely = ['ictal', 'interictal']
+labelx = ['interictal','ictal']
+labely = ['interictal','ictal']
 gr =  sns.heatmap(G/N,xticklabels = labelx, yticklabels = labely, annot = True, cmap="YlGnBu")
-plt.xlabel('actual')
-plt.ylabel('predict')
+plt.xlabel('predict')
+plt.ylabel('actual')
 plt.title(observer+'_CSSVM')
 plt.savefig('Dres\\D_TPstretch'+observer+'.png')
 
 plt.figure()
 gr =  sns.heatmap(Gb/N,xticklabels = labelx, yticklabels = labely, annot = True, cmap="YlGnBu")
-plt.xlabel('actual')
-plt.ylabel('predict')
+plt.xlabel('predict')
+plt.ylabel('actual')
 plt.title(observer+'_SVM')
 plt.savefig('Dres\\D_TPBase'+observer+'.png')
 
-[[TP,FN],[FP,TN]] = G
+[[TN,FP],[FN,TP]] = G
 acc = (TP+TN)/N
 sensivity = 0
 if TP != 0:
@@ -223,7 +222,7 @@ textres = '%s -- {ictal:interictal} = {%.2f:%.2f}\n'%(observer,NumIc/N,NumInter/
 textres += '\tCS-SVM:  Accuracy: %.4f, Sensitivity: %.4f, F1: %.4f\n\t\t\twith c = %.2f r2 = %.2f\n'\
 	%(acc,sensivity,F1,optc,optr)
 
-[[TP,FN],[FP,TN]] = Gb
+[[TN,FP],[FN,TP]] = Gb
 acc = (TP+TN)/N
 sensivity = 0
 if TP != 0:

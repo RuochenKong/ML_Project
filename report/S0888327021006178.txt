@@ -1,0 +1,11 @@
+Marco Cocconcelli, Matteo Strozzi, Jacopo Cavalaglio Camargo Molano, Riccardo Rubini,
+Detectivity: A combination of Hjorth’s parameters for condition monitoring of ball bearings,
+Mechanical Systems and Signal Processing,
+Volume 164,
+2022,
+108247,
+ISSN 0888-3270,
+https://doi.org/10.1016/j.ymssp.2021.108247.
+(https://www.sciencedirect.com/science/article/pii/S0888327021006178)
+Abstract: Hjorth’s parameters are statistical time-domain parameters used in signal processing and introduced by Bo Hjorth in 1970. These parameters are Activity, Mobility and Complexity. They are related to the variance of the signal and of its subsequent derivatives. They are commonly used in the analysis of electroencephalography (EEG) signals for feature extraction, but also in the tactile signal analysis in robotic area. In this paper, Hjorth’s parameters are applied to vibration signals for fault detection in ball bearings. In particular, two open-access datasets are used: the NASA bearing dataset of the University of Cincinnati and the Polytechnic of Turin rolling bearing dataset. In the first part of the paper the three parameters are used for monitoring the health of the bearings along their lifetime, proving their effectiveness in condition monitoring. In the second part, a new parameter is introduced, named Detectivity, that merges the information carried by Hjorth’s parameters in a single value and is suitable for continuous monitoring of machines.
+Keywords: Hjorth’s parameter; Condition monitoring; Fault detection; Bearings
